@@ -1,0 +1,100 @@
+Redux (Data management within React)
+Firebase FireStore (realtime db)
+Firebase Authentication (Login)
+Firebase Hosting (How to deploy)
+Material UI
+
+> npx create-react-app linkedin-clone-yt --template redux   // official Redux+JS template for Create React App https://redux-toolkit.js.org/
+
+More about Redux: https://redux.js.org/introduction/getting-started
+    Keywords: 
+        - actions, 
+        - reducer   // takes state and action as arguments, and returns the next state of the app
+    Description: Instead of mutating the state directly, you specify the mutations you want to happen with plain objects called actions. Then you write a special function called a reducer to decide how every action transforms the entire application's state.
+    Goal:  
+        - it scales to large and complex apps
+        - enables very powerful developer tools, because it is possible to trace every mutation to the action that caused it. You can record user sessions and reproduce them just by replaying every action.
+    Installation: https://redux.js.org/introduction/installation
+
+-------------------------------------------------------------------
+Firebase -> create project 
+    -> Cloud FireStore -> Create database -> Start in test mode -> Enable
+        'Expire' issue: 'Cloud FireStore' tab -> go to 'Rules' tab -> remove 'if request.time < timestamp.date(2021, 3, 4)' -> Publish
+    -> Authentication -> Sign-in method -> Email/Password -> Enable
+    -> Project Settings -> 'Your apps' section -> click on web icon -> Register app + Also set up Firebase Hosting -> Firebase SDK snippet: Config.
+
+    Create /src/firebase.js:
+    - insert code from config 
+    - import firebase from 'firebase'
+    - const firebaseApp = firebase.initializeApp(firebaseConfig);
+      const db = firebaseApp.firestore();
+      const auth = firebase.auth(); // this auth is going to allow us to do things like logging in, signing in and search etc
+      const storage = firebase.storage();
+      export { db, auth, storage };
+      // export default db;
+    
+    > yarn add firebase
+-------------------------------------------------------------------
+
+> cd linkedin-clone-yt
+> yarn start
+
+Clean up: 
+    - remove App.test.js, logo.svg, setupTests.js
+    - App.js: code inside <div>
+    - App.css: all code
+    - index.css: add *{margin:0}
+
+Component Structure:
+    Header
+        // HeaderOption
+    App Body
+        Sidebar
+        Feed    [connection to db]
+            // InputOption
+            // Post
+        Widgets
+    // Login
+
+MaterialUI:
+    > npm install @material-ui/core
+    > npm install @material-ui/icons
+
+
+Login:
+    // Authentication: Store the user inside the Redux.
+    Delete Counter.module.css, move other two file to 'features', delete 'counter' folder.
+    The purpose of Redux is when you have React nested components rather than passing it as a prop in individual components (causes Prop Drilling)- we use Redux to manage flow of the data.
+    In /src/app/store.js: 
+        - rename 'counterReducer' to 'userReducer', 'counterSlice' to 'userSlice', 'counter' to 'user'
+    Delete Counter.js
+    In /features/userSlice.js modify the template provided by redux:
+        - rename 'counterSlice' to 'userSlice'
+        - rename 'counter' to 'user'
+        - rename initialState: {value: 0,} to initialState: {user: null,}
+        - remove export const incrementAsync
+        - rename 'selectCount' to 'selectUser', state.user.value to state.user.user;
+        - change 'reducers' default logic to login/logout
+        // Payload in Redux context https://stackoverflow.com/questions/51357412/what-is-a-payload-in-redux-context
+        // Go to localhost -> install 'Redux DevTools' google extension -> open it in the Inspector -> Autoselect instances: go to State tab -> you'll see our initialState.
+        - In App.js -> pull the user from the data store:
+            import {useSelector} from 'react-redux';
+            const user = useSelector(selectUser)
+            {!user ? (<Login />): (....)
+        - create Login component
+            - const [email, setEmail] = useState('');
+              <input value={email} onChange={e=> setEmail(e.target.value)} .../>
+
+        ...
+        To use Redux -> open Sidebar.js -> const user = useSelector(selectUser);
+
+Animation when publishing posts:
+    Search for 'react flip move' https://github.com/joshwcomeau/react-flip-move
+    > yarn add react-flip-move
+    In Post.js:
+        - add import React, { forwardRef } from 'react';
+        - wrap component in forwardRef(), add ', ref' in brackets
+    In Feed.js:
+        - wrap posts in <FlipMove></FlipMove>
+        - import FlipMove from 'react-flip-move';
+    Go to localhost -> enter some input and you'll see it posted with animation.
